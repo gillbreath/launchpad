@@ -1,0 +1,474 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                  String  @id
+  user_id             String
+  type                String
+  provider            String
+  provider_account_id String
+  refresh_token       String?
+  access_token        String?
+  expires_at          Int?
+  token_type          String?
+  scope               String?
+  id_token            String?
+  session_state       String?
+  oauth_token_secret  String?
+  oauth_token         String?
+  User                User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([provider, provider_account_id])
+}
+
+model Animal {
+  id               String           @id
+  name             String
+  breeds           String[]
+  adoptionStatus   AdoptionStatus   @default(AVAILABLE)
+  shelterId        String
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime
+  biography        String
+  dateOfBirth      DateTime?
+  imageSrcs        String[]
+  intakeCategory   IntakeCategory
+  intakeDate       DateTime?
+  outcomeCategory  OutcomeCategory?
+  outcomeDate      DateTime?
+  placementInfo    PlacementInfo[]
+  primaryImageSrc  String?
+  sex              Sex
+  spayNeuterStatus Boolean
+  species          Species          @default(OTHER)
+  locationId       String?
+  internalId       String?
+  careStatus       CareStatus       @default(ACTIVE)
+  outcomeNotes     String?
+  Location         Location?        @relation(fields: [locationId], references: [id])
+  Shelter          Shelter          @relation(fields: [shelterId], references: [id])
+  AnimalEvent      AnimalEvent[]
+  AnimalFlag       AnimalFlag[]
+  AnimalTask       AnimalTask[]
+  BehaviorEvent    BehaviorEvent[]
+  BehaviorItem     BehaviorItem[]
+  MedicalItem      MedicalItem[]
+}
+
+model AnimalEvent {
+  id        String   @id
+  title     String
+  date      DateTime
+  animalId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Animal    Animal   @relation(fields: [animalId], references: [id])
+}
+
+model AnimalFlag {
+  id        String   @id
+  animalId  String
+  flagId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Animal    Animal   @relation(fields: [animalId], references: [id])
+  Flag      Flag     @relation(fields: [flagId], references: [id])
+}
+
+model AnimalTask {
+  id                  String        @id
+  title               String
+  status              TaskStatus
+  staffId             String?
+  animalId            String
+  taskId              String
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime
+  dueDate             DateTime?
+  completedByUserId   String?
+  createdByUserId     String?
+  lastUpdatedByUserId String?
+  locationTaskId      String?
+  dueDateKey          String?
+  Animal              Animal        @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  LocationTask        LocationTask? @relation(fields: [locationTaskId], references: [id])
+  Staff               Staff?        @relation(fields: [staffId], references: [id])
+  Task                Task          @relation(fields: [taskId], references: [id])
+  UserTask            UserTask[]
+
+  @@unique([animalId, taskId, dueDateKey])
+}
+
+model BehaviorEvent {
+  id          String   @id
+  title       String
+  description String?
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  animalId    String?
+  Animal      Animal?  @relation(fields: [animalId], references: [id])
+}
+
+model BehaviorItem {
+  id          String  @id
+  title       String
+  description String?
+  animalId    String?
+  Animal      Animal? @relation(fields: [animalId], references: [id])
+}
+
+model Flag {
+  id          String       @id
+  title       String
+  description String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime
+  AnimalFlag  AnimalFlag[]
+}
+
+model Location {
+  id           String         @id
+  name         String?
+  type         LocationType?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  capacity     String?
+  shelterId    String?
+  Animal       Animal[]
+  Shelter      Shelter?       @relation(fields: [shelterId], references: [id])
+  LocationTask LocationTask[]
+}
+
+model LocationTask {
+  id                  String       @id
+  title               String
+  status              TaskStatus
+  staffId             String?
+  locationId          String
+  taskId              String
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime
+  dueDate             DateTime?
+  completedByUserId   String?
+  createdByUserId     String?
+  lastUpdatedByUserId String?
+  AnimalTask          AnimalTask[]
+  Location            Location     @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  Staff               Staff?       @relation(fields: [staffId], references: [id])
+  Task                Task         @relation(fields: [taskId], references: [id])
+  UserTask            UserTask[]
+
+  @@unique([locationId, taskId])
+}
+
+model MagicLink {
+  id        String   @id
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  User      User     @relation(fields: [userId], references: [id])
+}
+
+model MedicalItem {
+  id        String   @id
+  name      String
+  quantity  Int
+  animalId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Animal    Animal   @relation(fields: [animalId], references: [id])
+}
+
+model PasswordResetRequest {
+  id             String   @id
+  email          String
+  activationCode String   @unique
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime
+}
+
+model Role {
+  id          String        @id
+  name        String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  userId      String?
+  permissions String[]
+  ShelterRole ShelterRole[]
+  ShelterUser ShelterUser[]
+}
+
+model Session {
+  id            String   @id
+  session_token String   @unique
+  user_id       String
+  expires       DateTime
+  User          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Shelter {
+  id                String              @id
+  name              String
+  phone             String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  addressLine1      String
+  addressLine2      String?
+  city              String
+  country           String
+  email             String?
+  state             String
+  zipCode           String
+  Animal            Animal[]
+  Location          Location[]
+  ShelterRole       ShelterRole[]
+  ShelterUser       ShelterUser[]
+  ShelterUserInvite ShelterUserInvite[]
+  Task              Task[]
+  User              User[]              @relation("ShelterUsers")
+}
+
+model ShelterRole {
+  id          String   @id
+  shelterId   String
+  roleId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  permissions String[]
+  Role        Role     @relation(fields: [roleId], references: [id])
+  Shelter     Shelter  @relation(fields: [shelterId], references: [id])
+}
+
+model ShelterUser {
+  id                String              @id
+  shelterId         String
+  userId            String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  roleId            String?
+  isAdmin           Boolean             @default(false)
+  isStaff           Boolean             @default(false)
+  isVolunteer       Boolean             @default(false)
+  permissions       String[]
+  Role              Role?               @relation(fields: [roleId], references: [id])
+  Shelter           Shelter             @relation(fields: [shelterId], references: [id])
+  User              User                @relation(fields: [userId], references: [id])
+  ShelterUserInvite ShelterUserInvite[]
+}
+
+model ShelterUserInvite {
+  id            String       @id
+  shelterId     String
+  email         String
+  shelterUserId String?
+  token         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime
+  isAdmin       Boolean      @default(false)
+  isStaff       Boolean      @default(false)
+  isVolunteer   Boolean      @default(false)
+  permissions   String[]
+  Shelter       Shelter      @relation(fields: [shelterId], references: [id])
+  ShelterUser   ShelterUser? @relation(fields: [shelterUserId], references: [id])
+
+  @@unique([shelterId, email])
+}
+
+model Staff {
+  id           String         @id
+  name         String
+  email        String         @unique
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  AnimalTask   AnimalTask[]
+  LocationTask LocationTask[]
+  Task         Task[]
+  UserTask     UserTask[]
+}
+
+model Task {
+  id                String           @id
+  title             String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime
+  staffId           String?
+  shelterId         String?
+  assignment        TaskAssignment[]
+  frequency         TaskFrequency
+  roleRestrictions  String[]
+  staffRestrictions String[]
+  type              TaskType[]
+  description       String?
+  notes             String?
+  dueDate           DateTime?
+  dueTime           String?
+  daysAfterArrival  Int?
+  AnimalTask        AnimalTask[]
+  LocationTask      LocationTask[]
+  Shelter           Shelter?         @relation(fields: [shelterId], references: [id])
+  Staff             Staff?           @relation(fields: [staffId], references: [id])
+  UserTask          UserTask[]
+}
+
+model User {
+  id              String        @id
+  email           String        @unique
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime
+  shelterId       String?
+  firstName       String
+  lastName        String
+  preferredName   String
+  pronouns        String?
+  phone           String?
+  profileImageSrc String?
+  password        String?
+  Account         Account[]
+  MagicLink       MagicLink[]
+  Session         Session[]
+  ShelterUser     ShelterUser[]
+  UserTask        UserTask[]
+  Shelter         Shelter[]     @relation("ShelterUsers")
+}
+
+model UserTask {
+  id             String        @id
+  title          String
+  status         TaskStatus
+  userId         String
+  taskId         String
+  animalTaskId   String
+  staffId        String?
+  assignedBy     String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime
+  dueDate        DateTime?
+  locationTaskId String?
+  completedBy    String?
+  AnimalTask     AnimalTask    @relation(fields: [animalTaskId], references: [id])
+  LocationTask   LocationTask? @relation(fields: [locationTaskId], references: [id])
+  Staff          Staff?        @relation(fields: [staffId], references: [id])
+  Task           Task          @relation(fields: [taskId], references: [id])
+  User           User          @relation(fields: [userId], references: [id])
+
+  @@unique([userId, taskId])
+}
+
+model VerificationToken {
+  id         Int      @id @default(autoincrement())
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum AdoptionStatus {
+  AVAILABLE
+  PENDING
+  ADOPTED
+}
+
+enum CareStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum IntakeCategory {
+  STRAY
+  SURRENDER
+  TRANSFER
+  BORN_IN_SHELTER
+  RETURN
+  OTHER
+}
+
+enum LocationType {
+  KENNEL
+  FOSTER
+  CAGE
+  ROOM
+  TANK
+}
+
+enum OutcomeCategory {
+  ADOPTION
+  RETURN
+  TRANSFER
+  MEDICAL_EUTHANASIA
+  BEHAVIORAL_EUTHANASIA
+  CAPACITY_EUTHANASIA
+  OTHER_EUTHANASIA
+  OTHER
+}
+
+enum PlacementInfo {
+  GOOD_WITH_DOGS
+  GOOD_WITH_CATS
+  GOOD_WITH_KIDS
+  GOOD_WITH_OTHER_ANIMALS
+  HOUSETRAINED
+  CRATE_TRAINED
+  LEASH_TRAINED
+  SPECIAL_NEEDS
+  HIGH_ENERGY
+}
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+enum Species {
+  DOG
+  CAT
+  RABBIT
+  BIRD
+  HAMSTER
+  GUINEA_PIG
+  RAT
+  REPTILE
+  OTHER
+}
+
+enum TaskAssignment {
+  ALL_ANIMALS
+  ALL_DOGS
+  ALL_CATS
+  ALL_OTHERS
+}
+
+enum TaskFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+  ONE_TIME
+  REPEAT
+}
+
+enum TaskStatus {
+  INCOMPLETE
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum TaskType {
+  INTAKE
+  GENERAL_CARE
+  MEDICAL
+  BEHAVIORAL
+  ADOPTION
+  ADMIN
+  OTHER
+}
