@@ -1,18 +1,22 @@
-import prisma from '@/lib/prisma';
+import prisma from "@/lib/prisma";
 
 export default async function Page({ params }) {
-  const { table } = await params
-  const thisTablePreview = await prisma[table].findMany({ take: 10 })
+  const { table } = await params;
+  const thisTablePreview = await prisma[table].findMany({ take: 10 });
 
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <h1 className="text-4xl font-bold">
-          crud {table}
-        </h1>
+        <h1 className="text-4xl font-bold">crud {table}</h1>
+        <ul className="font-mono list-inside text-sm/6 text-center sm:text-left">
+          {thisTablePreview.map((eachRecord) => (
+            <li key={eachRecord} className="mb-2 tracking-[-.01em]">
+              <a href={"/crud/" + eachRecord.id}>{eachRecord.id}</a>
+            </li>
+          ))}
+        </ul>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-      </footer>
+      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center"></footer>
     </div>
   );
 }
