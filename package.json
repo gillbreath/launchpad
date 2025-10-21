@@ -5,10 +5,12 @@
   "scripts": {
     "build": "next build",
     "clean": "npm run prettier && npm run lint",
+    "cypress:open": "cypress open",
     "dev": "next dev --turbopack",
     "lint": "next lint",
     "prettier": "prettier . --write",
-    "start": "next start"
+    "start": "next start",
+    "test": "start-server-and-test dev http://localhost:3000 cypress:open"
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",
@@ -20,9 +22,11 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "cypress": "^15.4.0",
     "eslint": "^9",
     "eslint-config-next": "15.4.4",
     "prettier": "^3.6.2",
+    "start-server-and-test": "^2.1.2",
     "tailwindcss": "^4"
   }
 }
