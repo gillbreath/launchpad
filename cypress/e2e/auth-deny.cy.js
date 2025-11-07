@@ -1,15 +1,6 @@
 describe("Navigation", () => {
   const baseUrl = Cypress.config().baseUrl;
 
-  it("should redirect after logout", () => {
-    cy.visit("/api/auth/signout");
-    cy.get("#submitButton")
-      .click()
-      .then(() => {
-        cy.url().should("eq", baseUrl + "/");
-      });
-  });
-
   it("should redirect from protected routes", () => {
     cy.visit("/dashboard");
     cy.url().should(
@@ -31,5 +22,14 @@ describe("Navigation", () => {
     }).then((response) => {
       expect(response.status).to.eq(401);
     });
+  });
+
+  it("should redirect after logout", () => {
+    cy.visit("/api/auth/signout");
+    cy.get("#submitButton")
+      .click()
+      .then(() => {
+        cy.url().should("eq", baseUrl + "/");
+      });
   });
 });
